@@ -7,6 +7,24 @@ import hashlib
 import queue
 import json
 from tqdm import tqdm
+import argparse
+
+def validate_ip(s):
+    try:
+        socket.inet_aton(s)
+        return s
+    except socket.error:
+        raise argparse.ArgumentTypeError(f"Invalid IP address: {s}")
+
+# Step 2: Create an ArgumentParser object
+parser = argparse.ArgumentParser(description="Process an IP address.")
+
+# Step 3: Add arguments
+parser.add_argument("--ip", help="The IP address to process.", type=validate_ip, required=False)
+
+# Step 4: Parse arguments
+args = parser.parse_args()
+
 
 def hash_ip(ip_address, hash_func='sha256'):
     # Ensure ip_address is just the IP string, not a tuple
@@ -264,19 +282,23 @@ for root, dirs, files in os.walk(directory_path):
 
 #print(len(files_dict))
 
-addr_remote = queue.Queue()
+if args.ip is None:
+    addr_remote = queue.Queue()
 
-listener_thread = threading.Thread(target=udp_discovery_listener, args=(addr_remote,))
-listener_thread.start()
+    listener_thread = threading.Thread(target=udp_discovery_listener, args=(addr_remote,))
+    listener_thread.start()
 
-#while listener_thread.is_alive():
-thread = StoppableThread()
-thread.start()
+    #while listener_thread.is_alive():
+    thread = StoppableThread()
+    thread.start()
 
-listener_thread.join()
+    listener_thread.join()
 
-ip_local = get_local_ip()
-ip_remote = addr_remote.get()[0]
+    ip_local = get_local_ip()
+    ip_remote = addr_remote.get()[0]
+else:
+    ip_local = get_local_ip()
+    ip_remote = args.ip
 
 if hash_ip(ip_remote) > hash_ip(ip_local):
     socket = tcp_server()
