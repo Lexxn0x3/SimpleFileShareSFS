@@ -302,8 +302,9 @@ else:
 
 if hash_ip(ip_remote) > hash_ip(ip_local):
     socket = tcp_server()
-    thread.stop()
-    thread.join()
+    if args.ip is None:
+        thread.stop()
+        thread.join()
     #socket.send(json.dumps(files_dict).encode())
     send_json(socket, files_dict)
     #remote_files = json.loads(socket.recv(64000).decode())
@@ -313,8 +314,9 @@ if hash_ip(ip_remote) > hash_ip(ip_local):
     recvDelta(socket)
 elif hash_ip(ip_remote) < hash_ip(ip_local):
     socket = tcp_client(ip_remote)
-    thread.stop()
-    thread.join()
+    if args.ip is None:
+        thread.stop()
+        thread.join()
     #remote_files = json.loads(socket.recv(64000).decode())
     remote_files = recv_json(socket)
     #print(remote_files)
@@ -324,4 +326,3 @@ elif hash_ip(ip_remote) < hash_ip(ip_local):
     sendDelta(isSever=False, socket= socket, files_dict= files_dict, remote_dict= remote_files)
 else:
     print("ohoh")
-
